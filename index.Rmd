@@ -1,0 +1,80 @@
+---
+title: "Eliana Raposo HW2"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+---
+
+## Intro {.sidebar}
+
+Preparing the dashboard based on the instructions given in the assignment. Using data from mtcars dataset.
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data(mtcars)
+
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+mtcars$cyl  <- factor(mtcars$cyl)
+```
+
+Row
+-------------------------------------
+
+### THREE-GEAR CARS ARE DOMINANT
+```{r}
+gear_counts <- mtcars %>% count(gear)
+
+ggplot(gear_counts, aes(x = gear, y = n)) +
+  geom_col(fill = "gray70") +
+  geom_text(aes(label = n), hjust = 1, color = "blue", size = 6) +
+  coord_flip() +
+  labs(title = "Count of Cars per GEAR", x = "Gear", y = "",  caption = "Source: mtcars data") +
+  theme_minimal()
+```
+
+### FEW CARS have SIX or more CARBURETORS
+```{r}
+carb_counts <- mtcars %>% count(carb)
+
+ggplot(carb_counts, aes(x = carb, y = n)) +
+  geom_col(fill = "yellow") +
+  geom_text(aes(label = n), vjust = -0.5, color = "darkgreen") +
+  labs(title = "Count of Cars per CARB", x = "CARB", y = "",  caption = "Source: mtcars data") +
+  theme_minimal()
+```
+
+Row
+-------------------------------------
+
+### Only 5-gear cars utilize the 6 and 8 carburetor setups.
+```{r}
+plot_data <- mtcars %>%
+  count(gear, carb, cyl) %>%
+  group_by(gear) %>%
+  mutate(pct = n / nrow(mtcars) * 100)
+
+ggplot(plot_data, aes(x = cyl, y = pct)) +
+  geom_col(fill = "yellow") +
+  geom_text(aes(label = paste0(round(pct,1), "%")), vjust = 1, size = 2.5) +
+  facet_grid(gear ~ carb,
+    labeller = labeller(gear = function(x) paste0("gear: ", x),
+    carb = function(x) paste0("carb: ", x))) +
+  labs(title = "Distribution of Cylinder Counts by Carburetors and Gears",
+    x = "Cylinders",
+    y = "Percent",
+    caption = "Source: mtcars data") +
+  theme_minimal() +
+theme(strip.background = element_rect(fill = "grey80", color = NA),
+    strip.text = element_text(face = "bold"),
+    strip.text.y.right = element_text(angle = 0),
+    strip.placement = "outside")
+```
+
+
+
